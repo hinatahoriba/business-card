@@ -59,15 +59,14 @@ export default function WhiteRichCard() {
     x.set(0);
     y.set(0);
   };
-
   const snsLinks = [
-    { icon: <FaInstagram />, color: '#E1306C', url: '#' },
-    { icon: <FaLine />, color: '#06C755', url: '#' },
-    { icon: <FaXTwitter />, color: '#000000', url: '#' },
-    { icon: <FaFacebook />, color: '#1877F2', url: '#' },
-    { icon: <FaLinkedin />, color: '#0077B5', url: '#' },
-    { icon: <FaDiscord />, color: '#5865F2', url: '#' },
-    { icon: <FaGithub />, color: '#333333', url: '#' },
+    { icon: <FaInstagram />, color: '#E1306C', url: 'https://www.instagram.com/h.hinata1125?igsh=MWJxMXBvZnJkcml6cA==' },
+    { icon: <FaLine />, color: '#06C755', url: 'https://line.me/ti/p/Dnpd3EnIcN' },
+    { icon: <FaXTwitter />, color: '#000000', url: 'https://line.me/ti/p/Dnpd3EnIcN' },
+    { icon: <FaFacebook />, color: '#1877F2', url: 'https://www.facebook.com/share/17RvQnMfKw/' },
+    { icon: <FaLinkedin />, color: '#0077B5', url: 'https://www.linkedin.com/in/%E6%97%A5%E5%90%91-%E5%A0%80%E5%A0%B4-29109a32a?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app' },
+    { icon: <FaDiscord />, color: '#5865F2', url: 'http://discordapp.com/users/1065236698478428222' },
+    { icon: <FaGithub />, color: '#333333', url: 'https://github.com/hinatahoriba' },
   ];
 
   const name = "堀場 日向";
