@@ -19,7 +19,7 @@ const charVariants = {
     transition: {
       delay: i * 0.04,
       duration: 0.6,
-      ease: [0.215, 0.61, 0.355, 1],
+      ease: [0.215, 0.61, 0.355, 1] as const,
     },
   }),
 };
@@ -31,7 +31,7 @@ const floatingVariants = (index: number) => ({
     transition: {
       duration: 3 + (index % 3) * 0.5,
       repeat: Infinity,
-      ease: "easeInOut",
+      ease: "easeInOut" as const,
     },
   },
 });
