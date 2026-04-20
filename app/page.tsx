@@ -1,36 +1,63 @@
 'use client';
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useRef } from 'react';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import {
   FaInstagram, FaLine, FaXTwitter, FaFacebook,
-  FaLinkedin, FaDiscord, FaGithub, FaEnvelope, FaChevronDown
+  FaLinkedin, FaDiscord, FaGithub, FaEnvelope
 } from 'react-icons/fa6';
 import Image from 'next/image';
 
-export default function WebCard() {
-  const [isOpen, setIsOpen] = useState(false);
+// --- アニメーション設定 ---
 
-  // 親コンテナのアニメーション設定
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        delayChildren: 0.2, // 開始までの待機時間
-        staggerChildren: 0.12 // 各要素が順次表示される間隔
-      }
-    }
+// 1文字ずつ表示するためのバリアント
+const charVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.04,
+      duration: 0.6,
+      ease: [0.215, 0.61, 0.355, 1],
+    },
+  }),
+};
+
+// SNSアイコンの浮遊アニメーション（個別でリズムを変える）
+const floatingVariants = (index: number) => ({
+  animate: {
+    y: [0, -8, 0],
+    transition: {
+      duration: 3 + (index % 3) * 0.5,
+      repeat: Infinity,
+      ease: "easeInOut",
+    },
+  },
+});
+
+export default function WhiteRichCard() {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // ① 3D Tilt 効果
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
+  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["7deg", "-7deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-7deg", "7deg"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    x.set(e.clientX / window.innerWidth - 0.5);
+    y.set(e.clientY / window.innerHeight - 0.5);
   };
 
-  // 各要素のアニメーション設定
-  const itemVariants = {
-    hidden: { y: 25, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } // スムーズなイージング
-    }
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
   };
 
   const snsLinks = [
@@ -43,56 +70,115 @@ export default function WebCard() {
     { icon: <FaGithub />, color: '#333333', url: '#' },
   ];
 
+  const name = "堀場 日向";
+
   return (
-    <main className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6 selection:bg-indigo-100">
+    <main className="min-h-screen bg-[#F0F4F8] flex items-center justify-center p-6 selection:bg-indigo-100">
+      {/* 背景の柔らかな光 */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-white rounded-full blur-[120px] opacity-60" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-100/50 rounded-full blur-[120px]" />
+      </div>
+
       <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="w-full max-w-[360px] bg-white border border-gray-100 rounded-[3.5rem] p-10 shadow-[0_4px_30px_rgba(0,0,0,0.02)]"
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          rotateX,
+          rotateY,
+          transformStyle: "preserve-3d",
+        }}
+        className="relative w-full max-w-[360px]"
       >
-        {/* ① ヘッダー：顔写真（影なし・クリーン） */}
-        <div className="flex flex-col items-center">
-          <motion.div variants={itemVariants} className="relative">
-            <div className="w-32 h-32 rounded-full border-[6px] border-[#F8FAFC] overflow-hidden">
-              <Image
-                src="/key_visual.jpg"
-                alt="Profile"
-                width={128}
-                height={128}
-                className="object-cover"
-                priority // LCP対策（最初に読み込む）
+        {/* ⑥ ボーダーライト（白背景でも映える繊細な光の輪郭） */}
+        <div className="absolute -inset-[1px] bg-gradient-to-tr from-white via-white/50 to-indigo-200/30 rounded-[3.5rem] shadow-xl" />
+
+        {/* ⑤ ガラス効果の本体（白ベース） */}
+        <div className="relative bg-white/60 backdrop-blur-xl border border-white/80 rounded-[3.5rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] overflow-hidden">
+
+          <div className="flex flex-col items-center" style={{ transform: "translateZ(50px)" }}>
+            <div className="relative">
+              {/* ③ プロフィール環（回転する破線とグラデーション） */}
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                className="absolute -inset-3 border-2 border-dashed border-indigo-200 rounded-full"
               />
+              <motion.div
+                animate={{ rotate: -360 }}
+                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                className="absolute -inset-5 border border-indigo-100 rounded-full"
+              />
+
+              <div className="relative w-28 h-28 rounded-full border-[6px] border-white overflow-hidden shadow-lg">
+                <Image
+                  src="/key_visual.jpg"
+                  alt="Profile"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
             </div>
+
+            {/* ② 名前：1文字ずつスライドイン */}
+            <div className="mt-8 text-center">
+              <h1 className="text-2xl font-bold text-gray-800 flex justify-center tracking-tight">
+                {name.split("").map((char, i) => (
+                  <motion.span
+                    key={i}
+                    custom={i}
+                    initial="hidden"
+                    animate="visible"
+                    variants={charVariants}
+                  >
+                    {char === " " ? "\u00A0" : char}
+                  </motion.span>
+                ))}
+              </h1>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="text-[10px] font-extrabold text-indigo-500 uppercase mt-2 tracking-[0.25em]"
+              >
+                Web APP Developer
+              </motion.p>
+            </div>
+          </div>
+
+          {/* 自己紹介文 */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="mt-8 text-center"
+            style={{ transform: "translateZ(30px)" }}
+          >
+            <p className="text-gray-500 text-[0.9rem] leading-relaxed font-medium">
+              東京都町田市出身。<br />
+              趣味でウェブアプリを<br />
+              作成しています。
+            </p>
           </motion.div>
 
-          {/* 名前・肩書き */}
-          <motion.div variants={itemVariants} className="mt-8 text-center">
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">堀場 日向</h1>
-            <p className="text-sm font-semibold text-indigo-500 mt-2 tracking-[0.15em] uppercase">Web APP Developer</p>
-          </motion.div>
-        </div>
-
-        {/* ② 自己紹介 */}
-        <motion.div variants={itemVariants} className="mt-8">
-          <p className="text-gray-500 text-[0.9rem] leading-[1.8] text-center px-2">
-            はじめまして！！堀場日向です<br />
-            東京都町田市出身です<br />
-            趣味でウェブアプリを作成しています。
-          </p>
-        </motion.div>
-
-        {/* ③ SNSリンク（常時表示、リッチなホバー） */}
-        <motion.div variants={itemVariants} className="mt-10">
-          <div className="flex flex-wrap justify-center gap-3">
-            {snsLinks.map((sns, index) => (
+          {/* ④ SNSリンク（浮遊アニメーション + 全7種） */}
+          <div className="mt-10 flex flex-wrap justify-center gap-3" style={{ transform: "translateZ(60px)" }}>
+            {snsLinks.map((sns, i) => (
               <motion.a
-                key={index}
+                key={i}
                 href={sns.url}
-                whileHover={{ y: -5, scale: 1.1 }}
+                variants={floatingVariants(i)}
+                animate="animate"
+                whileHover={{
+                  scale: 1.2,
+                  backgroundColor: "#fff",
+                  boxShadow: "0 10px 20px rgba(0,0,0,0.05)"
+                }}
                 whileTap={{ scale: 0.9 }}
-                className="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-400 rounded-2xl hover:bg-white hover:shadow-xl hover:shadow-gray-200 transition-all duration-300"
-                style={{ color: 'inherit' }}
+                className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white/50 border border-gray-100 text-gray-400 transition-all duration-300"
                 onMouseEnter={(e) => (e.currentTarget.style.color = sns.color)}
                 onMouseLeave={(e) => (e.currentTarget.style.color = '')}
               >
@@ -100,7 +186,10 @@ export default function WebCard() {
               </motion.a>
             ))}
           </div>
-        </motion.div>
+
+          {/* 下部の装飾ライン */}
+          <div className="mt-10 w-8 h-1 bg-indigo-100 rounded-full mx-auto" />
+        </div>
       </motion.div>
     </main>
   );
